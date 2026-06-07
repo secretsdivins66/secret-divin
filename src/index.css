@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bleu: #0a0e2e;
+  --bleu-clair: #1a237e;
+  --or: #f9a825;
+  --or-pale: #ffd54f;
+  --blanc: #ffffff;
+  --gris: #b0b8d4;
+  --fond-carte: #111a55;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bleu);
+  color: var(--blanc);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+.arabic {
+  font-family: 'Noto Naskh Arabic', serif;
+  direction: rtl;
+  text-align: right;
+  font-size: 1.4em;
+  line-height: 1.8;
+}
+
+.separateur {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--or);
+  margin: 24px 0;
+}
+
+.separateur::before,
+.separateur::after {
+  content: '';
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--or));
+}
+
+.separateur::after {
+  background: linear-gradient(to left, transparent, var(--or));
+}
+
+.btn-principal {
+  background: var(--or);
+  color: var(--bleu-clair);
+  font-weight: 700;
+  padding: 12px 28px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-principal:hover {
+  background: var(--or-pale);
+  transform: translateY(-2px);
+}
+
+.btn-secondaire {
+  background: transparent;
+  color: var(--or);
+  border: 1px solid var(--or);
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-secondaire:hover {
+  background: rgba(249, 168, 37, 0.1);
+}
+
+.carte {
+  background: var(--fond-carte);
+  border: 1px solid rgba(249, 168, 37, 0.1);
+  padding: 24px;
+  transition: all 0.3s;
+}
+
+.carte:hover {
+  border-color: rgba(249, 168, 37, 0.3);
+  transform: translateY(-2px);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
