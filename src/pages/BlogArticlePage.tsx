@@ -86,7 +86,7 @@ export function BlogArticlePage() {
             .from('blog_articles')
             .update({ views: (art.views ?? 0) + 1 })
             .eq('id', art.id)
-            .catch(() => {});
+            .then(undefined, () => {});
         }
 
         // Fetch all slugs for prev/next navigation
@@ -103,7 +103,7 @@ export function BlogArticlePage() {
           if (idx < list.length - 1) setPrev({ title: list[idx + 1].title, slug: list[idx + 1].slug });
         }
       })
-      .catch(() => { setNotFound(true); setLoading(false); });
+      .then(undefined, () => { setNotFound(true); setLoading(false); });
   }, [slug]);
 
   if (loading) {

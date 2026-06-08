@@ -48,7 +48,7 @@ export function BlogPage() {
         setArticles((data as Article[]) ?? []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .then(undefined, () => setLoading(false));
   }, []);
 
   const filtered = articles.filter(a => {

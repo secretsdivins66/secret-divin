@@ -356,7 +356,7 @@ export function ProfilPage() {
       'subscriptions', 'user_roles',
     ];
     for (const table of tables) {
-      await supabase.from(table).delete().eq('user_id', user.id).catch(() => {});
+      await supabase.from(table).delete().eq('user_id', user.id).then(undefined, () => {});
     }
     await supabase.auth.signOut();
     navigate('/auth');

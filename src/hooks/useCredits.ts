@@ -67,7 +67,7 @@ export function useCredits(): UseCreditsReturn {
       type: 'deduction',
       amount: -cost,
       description: toolName,
-    }).catch(() => {});
+    }).then(undefined, () => {});
     setBalance(newBal);
     return true;
   }, [userId, balance, isUnlimited]);
@@ -75,13 +75,13 @@ export function useCredits(): UseCreditsReturn {
   const refund = useCallback(async (cost: number, toolName: string): Promise<void> => {
     if (!userId || isUnlimited) return;
     const newBal = balance + cost;
-    await supabase.from('profiles').update({ credits: newBal }).eq('id', userId).catch(() => {});
+    await supabase.from('profiles').update({ credits: newBal }).eq('id', userId).then(undefined, () => {});
     await supabase.from('credit_transactions').insert({
       user_id: userId,
       type: 'refund',
       amount: cost,
       description: `Remboursement — ${toolName}`,
-    }).catch(() => {});
+    }).then(undefined, () => {});
     setBalance(newBal);
   }, [userId, balance, isUnlimited]);
 

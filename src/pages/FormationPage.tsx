@@ -542,6 +542,7 @@ export function FormationPage() {
   // ── VIEW: LESSON ─────────────────────────────────────────────────────────────
 
   if (view === 'lesson' && selMod && selLes) {
+    const mod = selMod;
     const isReview = completed.has(selLes.id);
 
     function backToModule() {
@@ -552,10 +553,10 @@ export function FormationPage() {
     }
 
     function prevLesson() {
-      if (lesIdx > 0) openLesson(selMod, selMod.lessons[lesIdx - 1], lesIdx - 1);
+      if (lesIdx > 0) openLesson(mod, mod.lessons[lesIdx - 1], lesIdx - 1);
     }
     function nextLesson() {
-      if (lesIdx < selMod.lessons.length - 1) openLesson(selMod, selMod.lessons[lesIdx + 1], lesIdx + 1);
+      if (lesIdx < mod.lessons.length - 1) openLesson(mod, mod.lessons[lesIdx + 1], lesIdx + 1);
     }
 
     const allAnswered = answers.every(a => a !== null);
