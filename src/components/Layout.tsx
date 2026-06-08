@@ -59,6 +59,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Déconnexion automatique après 30 minutes d'inactivité (utilisateurs connectés)
+  useEffect(() => {
+    if (!user) return;
+
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+    let inactivityTimer: ReturnType<typeof setTimeout>;
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(async () => {
+        await supabase.auth.signOut();
+        navigate('/auth');
+      }, INACTIVITY_TIMEOUT);
+    }
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => document.addEventListener(event, resetInactivityTimer));
+    resetInactivityTimer();
+
+    return () => {
+      events.forEach(event => document.removeEventListener(event, resetInactivityTimer));
+      clearTimeout(inactivityTimer);
+    };
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleLogout() {
     await supabase.auth.signOut();
     navigate('/');

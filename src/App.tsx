@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { getCSRFToken, setCSRFToken } from './utils/security';
 import { PrivateRoute } from './components/PrivateRoute';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
@@ -29,6 +31,13 @@ function WithLayout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  // Initialiser le token CSRF au démarrage de l'application
+  useEffect(() => {
+    if (!getCSRFToken()) {
+      setCSRFToken();
+    }
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

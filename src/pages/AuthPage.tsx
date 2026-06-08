@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { validatePassword, getPasswordStrength } from '../utils/security';
 
 type Tab = 'login' | 'register';
 
@@ -30,7 +31,8 @@ export function AuthPage() {
     e.preventDefault();
     setError(''); setSuccess('');
     if (password !== confirm) { setError('Les mots de passe ne correspondent pas.'); return; }
-    if (password.length < 6) { setError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.isValid) { setError(passwordCheck.message); return; }
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
@@ -149,7 +151,25 @@ export function AuthPage() {
               </div>
               <div>
                 <label style={{ color: '#b0b8d4', fontSize: '0.85rem', display: 'block', marginBottom: '6px' }}>Mot de passe</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="6 caractères minimum" style={inputStyle} />
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="8 caractères, 1 majuscule, 1 chiffre" style={inputStyle} />
+                {password && (() => {
+                  const strength = getPasswordStrength(password);
+                  return (
+                    <div style={{ marginTop: '8px' }}>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {[1, 2, 3].map(level => (
+                          <div key={level} style={{
+                            flex: 1,
+                            height: '4px',
+                            borderRadius: '2px',
+                            background: level <= strength.level ? strength.color : 'rgba(255,255,255,0.1)',
+                          }} />
+                        ))}
+                      </div>
+                      <span style={{ color: strength.color, fontSize: '0.8rem' }}>{strength.label}</span>
+                    </div>
+                  );
+                })()}
               </div>
               <div>
                 <label style={{ color: '#b0b8d4', fontSize: '0.85rem', display: 'block', marginBottom: '6px' }}>Confirmer le mot de passe</label>

@@ -236,11 +236,25 @@ export function AdminPage() {
 
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
 
-  // ── Auth gate ──────────────────────────────────────────
+  // ── Auth gate (double vérification : email côté client ET rôle en base) ──
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.email !== ADMIN_EMAIL) {
+      if (!user) {
+        navigate('/dashboard');
+        return;
+      }
+
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      const isAdminUser = user.email === ADMIN_EMAIL || roleData?.role === 'admin';
+
+      if (!isAdminUser) {
         navigate('/dashboard');
         return;
       }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { WHATSAPP_NUMBER } from '../utils/mystique';
 import { Reveal } from '../components/Reveal';
+import { isValidEmail, sanitizeInput, checkRateLimit } from '../utils/security';
 
 const SEP = '——— ✦ ———';
 
@@ -39,14 +40,22 @@ export function ContactPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return;
+    if (!isValidEmail(form.email.trim())) {
+      setErr('Adresse email invalide.');
+      return;
+    }
+    if (!checkRateLimit('contact_form', 3, 60000)) {
+      setErr('Trop de messages envoyés. Réessaie dans quelques instants.');
+      return;
+    }
     setSending(true);
     setErr('');
     try {
       const { error } = await supabase.from('contact_messages').insert({
-        name: form.name.trim(),
+        name: sanitizeInput(form.name.trim()),
         email: form.email.trim(),
         subject: form.subject,
-        message: form.message.trim(),
+        message: sanitizeInput(form.message.trim()),
       });
       if (error) throw error;
       setSent(true);
