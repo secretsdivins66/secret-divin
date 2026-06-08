@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   gender        text,
   religion      text,
   language      text DEFAULT 'fr',
-  credits       integer NOT NULL DEFAULT 10,
+  credits       integer NOT NULL DEFAULT 0,
   is_unlimited  boolean NOT NULL DEFAULT false,
   created_at    timestamptz NOT NULL DEFAULT now(),
   updated_at    timestamptz NOT NULL DEFAULT now()
@@ -32,7 +32,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS profiles_user_id_key ON profiles (user_id);
 -- =========================================================
 CREATE TABLE IF NOT EXISTS user_credits (
   user_id          uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
-  balance          integer NOT NULL DEFAULT 10,
+  balance          integer NOT NULL DEFAULT 0,
   total_purchased  integer NOT NULL DEFAULT 0,
   updated_at       timestamptz NOT NULL DEFAULT now()
 );
@@ -155,7 +155,9 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 -- =========================================================
 -- Trigger : à la création d'un compte auth, on initialise
--- automatiquement profiles + user_credits (10 crédits offerts)
+-- automatiquement profiles + user_credits (aucun crédit offert :
+-- seuls les outils marqués gratuits, ex. Poids Mystique, sont
+-- accessibles sans crédit, indépendamment du solde)
 -- =========================================================
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS trigger
@@ -165,11 +167,11 @@ SET search_path = public
 AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, credits)
-  VALUES (NEW.id, NEW.email, 10)
+  VALUES (NEW.id, NEW.email, 0)
   ON CONFLICT (id) DO NOTHING;
 
   INSERT INTO public.user_credits (user_id, balance)
-  VALUES (NEW.id, 10)
+  VALUES (NEW.id, 0)
   ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;
