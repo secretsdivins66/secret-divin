@@ -17,7 +17,7 @@ interface Result {
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
 
 const ELEMENT_DESC: Record<string, string> = {
   Feu:   'Personnalité ardente, passionnée et déterminée. Énergie solaire, leadership naturel et courage.',

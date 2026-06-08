@@ -224,7 +224,7 @@ export function ProfilPage() {
         `Translittère ce prénom en arabe SANS harakat. Retourne UNIQUEMENT du JSON valide: {"arabic": "النص", "weight": 0}. Prénom: ${name}`;
 
       const [res1, res2] = await Promise.all([
-        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -232,7 +232,7 @@ export function ProfilPage() {
             generationConfig: { temperature: 0.1, maxOutputTokens: 200 },
           }),
         }),
-        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

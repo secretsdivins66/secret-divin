@@ -74,7 +74,7 @@ function generateSquare(PM: number, size: SquareSize): number[] {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
-const GEMINI_FLASH = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+const GEMINI_FLASH = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
 const GEMINI_25 = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
 
 const OBJECTIVES = [

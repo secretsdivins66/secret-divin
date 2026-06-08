@@ -561,11 +561,11 @@ function UsersTab({ users, roles }: { users: Profile[]; roles: UserRole[] }) {
       const makePrompt = (name: string) =>
         `Translittère ce prénom en arabe SANS harakat. Retourne UNIQUEMENT du JSON valide: {"arabic": "النص", "weight": 0}. Prénom: ${name}`;
       const [r1, r2] = await Promise.all([
-        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: makePrompt(p.first_name!) }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 200 } }),
         }),
-        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: makePrompt(p.mother_name!) }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 200 } }),
         }),
