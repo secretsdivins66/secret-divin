@@ -104,3 +104,13 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+
+@media (max-width: 480px) {
+  .logo-textes {
+    display: none;
+  }
+  .logo-img {
+    width: 38px !important;
+    height: 38px !important;
+  }
+}

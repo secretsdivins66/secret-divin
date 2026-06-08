@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PACKS, WHATSAPP_NUMBER } from '../utils/mystique';
 import { Reveal } from '../components/Reveal';
+import logo from '../assets/logo.svg';
 
 const SEP = '——— ✦ ———';
 
@@ -63,6 +64,20 @@ export function LandingPage() {
         background: 'radial-gradient(ellipse at 50% 0%, rgba(249,168,37,0.07) 0%, transparent 65%)',
         position: 'relative',
       }}>
+        <Reveal>
+          <img
+            src={logo}
+            alt="Secret Divin"
+            style={{
+              width: 'clamp(72px, 12vw, 100px)',
+              height: 'clamp(72px, 12vw, 100px)',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 0 18px rgba(249,168,37,0.45))',
+              marginBottom: '20px',
+            }}
+          />
+        </Reveal>
+
         <Reveal>
           <div style={{
             fontFamily: 'Noto Naskh Arabic, serif',

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { validatePassword, getPasswordStrength } from '../utils/security';
+import logo from '../assets/logo.svg';
 
 type Tab = 'login' | 'register';
 
@@ -73,14 +74,18 @@ export function AuthPage() {
       <div style={{ width: '100%', maxWidth: '420px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            width: '64px', height: '64px',
-            background: 'linear-gradient(135deg, #f9a825, #1a237e)',
-            borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.8rem',
-            margin: '0 auto 16px',
-          }}>✦</div>
+          <img
+            src={logo}
+            alt="Secret Divin"
+            style={{
+              width: '80px',
+              height: '80px',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 0 12px rgba(249,168,37,0.5))',
+              margin: '0 auto 16px',
+              display: 'block',
+            }}
+          />
           <h1 style={{ color: '#f9a825', fontSize: '1.8rem', fontWeight: '700' }}>Secret Divin</h1>
           <p style={{ color: '#b0b8d4', fontSize: '0.9rem', marginTop: '4px' }}>Sagesse Spirituelle</p>
           <p style={{ color: '#f9a825', fontFamily: 'Noto Naskh Arabic, serif', fontSize: '1rem', direction: 'rtl', marginTop: '4px' }}>الحكمة الروحية</p>

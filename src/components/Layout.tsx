@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { CreditBadge } from './CreditBadge';
 import { getIsPlaying, stopSpeaking } from '../utils/tts';
+import logo from '../assets/logo.svg';
 
 const PUBLIC_PATHS = ['/', '/auth', '/fonctionnalites', '/credits', '/blog', '/contact'];
 
@@ -104,14 +105,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
           {/* Logo */}
           <Link to={user ? '/dashboard' : '/'} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '40px', height: '40px',
-              background: 'linear-gradient(135deg, #f9a825, #1a237e)',
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.2rem',
-            }}>✦</div>
-            <div>
+            <img
+              src={logo}
+              alt="Secret Divin"
+              className="logo-img"
+              style={{
+                width: '44px',
+                height: '44px',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 0 8px rgba(249,168,37,0.4))',
+                transition: 'filter 0.3s',
+                flexShrink: 0,
+              }}
+              onMouseEnter={e => { (e.target as HTMLImageElement).style.filter = 'drop-shadow(0 0 14px rgba(249,168,37,0.7))'; }}
+              onMouseLeave={e => { (e.target as HTMLImageElement).style.filter = 'drop-shadow(0 0 8px rgba(249,168,37,0.4))'; }}
+            />
+            <div className="logo-textes">
               <div style={{ color: '#f9a825', fontWeight: '700', fontSize: '1.1rem', lineHeight: 1 }}>Secret Divin</div>
               <div style={{ color: '#b0b8d4', fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase' }}>SAGESSE SPIRITUELLE</div>
               <div style={{ color: '#f9a825', fontSize: '0.8rem', fontFamily: 'Noto Naskh Arabic, serif', direction: 'rtl' }}>الحكمة الروحية</div>
@@ -208,6 +217,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* FOOTER */}
       <footer style={{ background: '#060918', borderTop: '1px solid rgba(249,168,37,0.1)', padding: '40px 20px 24px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+            <img
+              src={logo}
+              alt="Secret Divin"
+              style={{ width: '40px', height: '40px', objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(249,168,37,0.35))' }}
+            />
+            <div>
+              <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: '700', color: '#f9a825' }}>Secret Divin</div>
+              <div style={{ fontSize: '0.55rem', color: '#b0b8d4', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Sagesse Spirituelle</div>
+            </div>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '32px', marginBottom: '32px' }}>
             <div>
               <h4 style={{ color: '#f9a825', fontWeight: '700', marginBottom: '12px' }}>Services</h4>
