@@ -360,7 +360,7 @@ export function FormationPage() {
             .update({ balance: bal, updated_at: new Date().toISOString() }).eq('user_id', user.id);
           await supabase.from('credit_transactions').insert({
             user_id: user.id, type: 'refund', amount: 2, tool: 'formation',
-            balance_after: bal, description: `Remboursement — ${lesson.title} (erreur IA)`,
+            balance_after: bal, description: `Remboursement — ${lesson.title} (erreur technique)`,
           });
         }
       }

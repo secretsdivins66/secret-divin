@@ -152,7 +152,7 @@ async function callGemini(frenchName: string): Promise<string> {
       generationConfig: { temperature: 0.1, maxOutputTokens: 200 },
     }),
   });
-  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Erreur de connexion (${res.status})`);
   const data = await res.json();
   const raw: string = data.candidates[0].content.parts[0].text;
   return (JSON.parse(raw.replace(/```json|```/g, '').trim()) as { arabic: string }).arabic;

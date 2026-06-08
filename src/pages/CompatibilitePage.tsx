@@ -147,7 +147,7 @@ async function callMainGemini(prompt: string, retries = 1): Promise<CompatData> 
   try { return JSON.parse(clean) as CompatData; }
   catch {
     if (retries > 0) return callMainGemini(prompt, retries - 1);
-    throw new Error('Réponse invalide de l\'IA. Veuillez réessayer.');
+    throw new Error('Réponse invalide. Veuillez réessayer.');
   }
 }
 

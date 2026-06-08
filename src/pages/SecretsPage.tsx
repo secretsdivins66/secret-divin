@@ -115,7 +115,7 @@ async function callSecretsGemini(prompt: string): Promise<SecretsData> {
       generationConfig: { temperature: 0.8, maxOutputTokens: 3000 },
     }),
   });
-  if (!res.ok) throw new Error(`Gemini ${res.status}`);
+  if (!res.ok) throw new Error(`Erreur de connexion (${res.status})`);
   const j = await res.json();
   const raw = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '') as string;
   const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();

@@ -218,7 +218,7 @@ async function callGemini(prompt: string, retries = 1): Promise<PlantesData> {
     return JSON.parse(clean) as PlantesData;
   } catch {
     if (retries > 0) return callGemini(prompt, retries - 1);
-    throw new Error('Réponse invalide de l\'IA. Veuillez réessayer.');
+    throw new Error('Réponse invalide. Veuillez réessayer.');
   }
 }
 

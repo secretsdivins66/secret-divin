@@ -1260,7 +1260,7 @@ Retourne UNIQUEMENT le texte de l'article, sans titre, sans markdown, juste les 
               padding: '10px 20px', cursor: generating ? 'not-allowed' : 'pointer',
               fontWeight: '600', fontSize: '0.86rem', borderRadius: '4px',
             }}>
-              {generating ? 'Génération en cours...' : 'Générer avec Gemini'}
+              {generating ? 'Génération en cours...' : 'Générer l\'article'}
             </button>
           </div>
 

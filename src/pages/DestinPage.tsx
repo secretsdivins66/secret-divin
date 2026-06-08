@@ -72,8 +72,8 @@ function Spinner() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '60px 20px' }}>
       <div style={{ width: '48px', height: '48px', border: '3px solid rgba(249,168,37,0.2)', borderTopColor: '#f9a825', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <p style={{ color: '#b0b8d4', fontSize: '0.9rem', textAlign: 'center', maxWidth: '300px' }}>
-        Calcul de votre destin en cours…<br />
-        <span style={{ fontSize: '0.8rem', color: 'rgba(176,184,212,0.6)' }}>Gemini 2.5 Flash analyse vos données spirituelles</span>
+        Révélation de ton destin en cours…<br />
+        <span style={{ fontSize: '0.8rem', color: 'rgba(176,184,212,0.6)' }}>Connexion spirituelle en cours — analyse de vos données</span>
       </p>
     </div>
   );
@@ -150,7 +150,7 @@ async function callDestinGemini(prompt: string): Promise<DestinData> {
       generationConfig: { temperature: 0.8, maxOutputTokens: 4000 },
     }),
   });
-  if (!res.ok) throw new Error(`Gemini error ${res.status}`);
+  if (!res.ok) throw new Error(`Erreur de connexion (${res.status})`);
   const j = await res.json();
   const raw = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '') as string;
   const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
@@ -387,11 +387,11 @@ export function DestinPage() {
         <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>✦</div>
         <h1 style={{ color: '#f9a825', fontSize: '1.8rem', fontWeight: '800', marginBottom: '8px' }}>Destin Mystique</h1>
         <p style={{ color: '#b0b8d4', fontSize: '0.95rem', maxWidth: '500px', margin: '0 auto 12px' }}>
-          Découvrez votre destinée spirituelle en 17 points — analyse complète par l'IA spirituelle
+          Découvrez votre destinée spirituelle en 17 points — une analyse mystique complète et profonde
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ background: 'rgba(249,168,37,0.15)', border: '1px solid rgba(249,168,37,0.3)', color: '#f9a825', padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem' }}>2 crédits</span>
-          <span style={{ background: 'rgba(176,184,212,0.1)', border: '1px solid rgba(176,184,212,0.2)', color: '#b0b8d4', padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem' }}>Gemini 2.5 Flash</span>
+          <span style={{ background: 'rgba(176,184,212,0.1)', border: '1px solid rgba(176,184,212,0.2)', color: '#b0b8d4', padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem' }}>Analyse mystique approfondie</span>
         </div>
       </div>
 

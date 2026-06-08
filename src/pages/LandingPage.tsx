@@ -19,7 +19,7 @@ const GRID_TOOLS = [
 const STEPS = [
   { num: '01', title: 'Créez votre compte', desc: 'Inscription gratuite en quelques secondes. Le poids mystique est accessible immédiatement sans crédit.' },
   { num: '02', title: 'Choisissez votre outil', desc: 'Parcourez 12 outils de sciences ésotériques islamiques. Chaque analyse est personnalisée selon votre profil.' },
-  { num: '03', title: 'Recevez votre analyse', desc: 'En quelques secondes, une analyse complète générée par intelligence artificielle, fondée sur les sciences islamiques.' },
+  { num: '03', title: 'Recevez votre analyse', desc: 'En quelques secondes, une analyse mystique complète et personnalisée, fondée sur les sciences islamiques.' },
 ];
 
 const TESTIMONIALS = [
@@ -97,7 +97,7 @@ export function LandingPage() {
 
         <Reveal delay={190}>
           <p style={{ color: '#b0b8d4', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', maxWidth: '580px', lineHeight: '1.7', marginBottom: '8px' }}>
-            La plateforme de sagesse spirituelle islamique — sciences ésotériques, calculs mystiques et guidance personnalisée par intelligence artificielle.
+            La plateforme de sagesse spirituelle islamique — sciences ésotériques, calculs mystiques et guidance spirituelle personnalisée.
           </p>
         </Reveal>
 

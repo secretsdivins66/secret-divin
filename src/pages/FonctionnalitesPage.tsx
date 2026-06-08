@@ -150,7 +150,7 @@ const TOOLS: ToolInfo[] = [
     cost: 0,
     desc: 'Une bibliothèque de 15 tutoriels complets sur les sciences ésotériques islamiques : calculs Abjad, carrés magiques, géomancie et bien plus encore. Accès gratuit et illimité.',
     obtiens: [
-      '15 tutoriels détaillés générés par IA',
+      '15 tutoriels détaillés et complets',
       'Exemples concrets et cas pratiques',
       'Points clés et erreurs courantes',
       'Navigation entre tutoriels connexes',
@@ -182,7 +182,7 @@ export function FonctionnalitesPage() {
             Toutes les fonctionnalités
           </h1>
           <p style={{ color: '#b0b8d4', fontSize: '1.05rem', maxWidth: '600px', margin: '0 auto' }}>
-            12 outils de sciences ésotériques islamiques, génération par intelligence artificielle, résultats personnalisés
+            12 outils de sciences ésotériques islamiques, révélations mystiques instantanées, résultats personnalisés
           </p>
           <div style={{ color: '#b0b8d4', marginTop: '16px', letterSpacing: '3px' }}>{SEP}</div>
         </div>

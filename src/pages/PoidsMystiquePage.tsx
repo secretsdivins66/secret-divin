@@ -56,7 +56,7 @@ async function callGemini(frenchName: string): Promise<string> {
     }),
   });
 
-  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Erreur de connexion (${res.status})`);
 
   const data = await res.json();
   const raw: string = data.candidates[0].content.parts[0].text;

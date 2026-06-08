@@ -605,7 +605,7 @@ export function GeomanciePage() {
             <div style={{ width: '56px', height: '56px', border: '3px solid rgba(249,168,37,0.2)', borderTop: '3px solid #f9a825', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <div style={{ color: '#f9a825', fontWeight: '600', marginBottom: '8px' }}>Consultation en cours...</div>
-            <div style={{ color: '#b0b8d4', fontSize: '0.9rem' }}>Tirage des 16 maisons · Interprétation par l'IA</div>
+            <div style={{ color: '#b0b8d4', fontSize: '0.9rem' }}>Tirage des 16 maisons · Interprétation mystique</div>
           </div>
         )}
 
