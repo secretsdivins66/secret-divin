@@ -5,7 +5,7 @@ import { CreditBadge } from './CreditBadge';
 import { getIsPlaying, stopSpeaking } from '../utils/tts';
 import logo from '../assets/logo.svg';
 
-const PUBLIC_PATHS = ['/', '/auth', '/fonctionnalites', '/credits', '/blog', '/contact'];
+const PUBLIC_PATHS = ['/', '/auth', '/fonctionnalites', '/credits', '/blog', '/contact', '/marabouts'];
 
 function useUser() {
   const [user, setUser] = useState<unknown>(null);
@@ -51,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { user, credits, isUnlimited, creditsLoading } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const isPublic = PUBLIC_PATHS.some(p => location.pathname === p || location.pathname.startsWith('/blog/'));
+  const isPublic = PUBLIC_PATHS.some(p => location.pathname === p || location.pathname.startsWith('/blog/') || location.pathname.startsWith('/marabouts/'));
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -153,6 +153,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <>
                 <Link to="/fonctionnalites" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Fonctionnalités</Link>
                 <Link to="/credits" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Tarifs</Link>
+                <Link to="/marabouts" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Marabouts</Link>
                 <Link to="/blog" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Blog</Link>
                 <Link to="/contact" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Contact</Link>
                 <Link to="/auth" style={{ background: '#f9a825', color: '#1a237e', padding: '8px 20px', fontWeight: '700', textDecoration: 'none', fontSize: '0.9rem' }}>
@@ -162,6 +163,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ) : (
               <>
                 <Link to="/dashboard" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Dashboard</Link>
+                <Link to="/marabouts" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Marabouts</Link>
                 <Link to="/profil" style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>Profil</Link>
                 <CreditBadge balance={credits} isUnlimited={isUnlimited} loading={creditsLoading} />
                 <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid rgba(249,168,37,0.4)', color: '#b0b8d4', padding: '6px 14px', cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -189,6 +191,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <Link to="/fonctionnalites" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Fonctionnalités</Link>
                 <Link to="/credits" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Tarifs</Link>
+                <Link to="/marabouts" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Marabouts</Link>
                 <Link to="/blog" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Blog</Link>
                 <Link to="/contact" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Contact</Link>
                 <Link to="/auth" onClick={() => setMenuOpen(false)} style={{ background: '#f9a825', color: '#1a237e', padding: '10px', fontWeight: '700', textDecoration: 'none', textAlign: 'center' }}>
@@ -199,6 +202,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <CreditBadge balance={credits} isUnlimited={isUnlimited} loading={creditsLoading} />
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Dashboard</Link>
+                <Link to="/marabouts" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Marabouts</Link>
                 <Link to="/profil" onClick={() => setMenuOpen(false)} style={{ color: '#b0b8d4', textDecoration: 'none' }}>Profil</Link>
                 <button onClick={() => { handleLogout(); setMenuOpen(false); }} style={{ background: 'transparent', border: '1px solid rgba(249,168,37,0.4)', color: '#b0b8d4', padding: '8px', cursor: 'pointer', textAlign: 'left' }}>
                   Déconnexion
@@ -240,7 +244,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h4 style={{ color: '#f9a825', fontWeight: '700', marginBottom: '12px' }}>À propos</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[['Fonctionnalités', '/fonctionnalites'], ['Tarifs', '/credits'], ['Blog', '/blog']].map(([label, path]) => (
+                {[['Fonctionnalités', '/fonctionnalites'], ['Tarifs', '/credits'], ['Marabouts', '/marabouts'], ['Blog', '/blog']].map(([label, path]) => (
                   <Link key={path} to={path} style={{ color: '#b0b8d4', textDecoration: 'none', fontSize: '0.9rem' }}>{label}</Link>
                 ))}
               </div>

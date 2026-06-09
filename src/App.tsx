@@ -25,6 +25,10 @@ import { BlogArticlePage } from './pages/BlogArticlePage';
 import { ContactPage } from './pages/ContactPage';
 import { AdminPage } from './pages/AdminPage';
 import { ProfilPage } from './pages/ProfilPage';
+import { MaraboutsPage } from './pages/MaraboutsPage';
+import { MaraboutProfilPage } from './pages/MaraboutProfilPage';
+import { MaraboutInscriptionPage } from './pages/MaraboutInscriptionPage';
+import { MaraboutDashboardPage } from './pages/MaraboutDashboardPage';
 
 function WithLayout({ children }: { children: React.ReactNode }) {
   return <Layout>{children}</Layout>;
@@ -68,6 +72,14 @@ function App() {
         <Route path="/formation" element={<WithLayout><PrivateRoute><FormationPage /></PrivateRoute></WithLayout>} />
         <Route path="/profil" element={<WithLayout><PrivateRoute><ProfilPage /></PrivateRoute></WithLayout>} />
         <Route path="/admin" element={<WithLayout><PrivateRoute><AdminPage /></PrivateRoute></WithLayout>} />
+
+        {/* Marabouts — public */}
+        <Route path="/marabouts" element={<WithLayout><MaraboutsPage /></WithLayout>} />
+        <Route path="/marabouts/inscription" element={<WithLayout><PrivateRoute><MaraboutInscriptionPage /></PrivateRoute></WithLayout>} />
+        <Route path="/marabouts/:id" element={<WithLayout><MaraboutProfilPage /></WithLayout>} />
+
+        {/* Espace marabout — protégé */}
+        <Route path="/marabout/dashboard" element={<WithLayout><PrivateRoute><MaraboutDashboardPage /></PrivateRoute></WithLayout>} />
       </Routes>
     </BrowserRouter>
   );

@@ -7,12 +7,13 @@ const ADMIN_EMAIL = 'admin@secretdivin.com';
 const SEP = '——— ✦ ———';
 
 const TABS = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'users',     label: 'Utilisateurs' },
-  { id: 'roles',     label: 'Rôles' },
-  { id: 'credits',   label: 'Crédits' },
-  { id: 'blog',      label: 'Blog' },
-  { id: 'stats',     label: 'Statistiques' },
+  { id: 'dashboard',  label: 'Dashboard' },
+  { id: 'users',      label: 'Utilisateurs' },
+  { id: 'roles',      label: 'Rôles' },
+  { id: 'credits',    label: 'Crédits' },
+  { id: 'blog',       label: 'Blog' },
+  { id: 'stats',      label: 'Statistiques' },
+  { id: 'marabouts',  label: 'Marabouts' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -99,6 +100,21 @@ interface PMData {
   motherArabic: string;
   PM: number;
   element: string;
+}
+
+interface AdminMarabout {
+  id: string;
+  user_id: string;
+  nom: string;
+  photo_url: string | null;
+  specialites: string[];
+  localisation: string | null;
+  telephone_whatsapp: string | null;
+  statut: string;
+  is_verified: boolean;
+  is_featured: boolean;
+  abonne_jusqu_au: string | null;
+  created_at: string;
 }
 
 interface GeminiResponse {
@@ -231,6 +247,7 @@ export function AdminPage() {
   const [formation,     setFormation]     = useState<FormationModuleRow[]>([]);
   const [articles,      setArticles]      = useState<Article[]>([]);
   const [transactions,  setTransactions]  = useState<Transaction[]>([]);
+  const [maraboutsData, setMaraboutsData] = useState<AdminMarabout[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [loadError,     setLoadError]     = useState('');
 
@@ -270,13 +287,14 @@ export function AdminPage() {
     setLoading(true);
     setLoadError('');
     try {
-      const [usersRes, rolesRes, consultRes, formRes, articlesRes, transRes] = await Promise.all([
+      const [usersRes, rolesRes, consultRes, formRes, articlesRes, transRes, maraboutsRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('*'),
         supabase.from('saved_rituals').select('user_id, page_source, created_at, title'),
         supabase.from('formation_modules').select('user_id, module_id, is_completed, best_score'),
         supabase.from('blog_articles').select('*').order('created_at', { ascending: false }),
         supabase.from('credit_transactions').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('marabouts').select('id, user_id, nom, photo_url, specialites, localisation, telephone_whatsapp, statut, is_verified, is_featured, abonne_jusqu_au, created_at').order('created_at', { ascending: false }),
       ]);
       setUsers((usersRes.data as Profile[]) ?? []);
       setRoles((rolesRes.data as UserRole[]) ?? []);
@@ -284,6 +302,7 @@ export function AdminPage() {
       setFormation((formRes.data as FormationModuleRow[]) ?? []);
       setArticles((articlesRes.data as Article[]) ?? []);
       setTransactions((transRes.data as Transaction[]) ?? []);
+      setMaraboutsData((maraboutsRes.data as AdminMarabout[]) ?? []);
     } catch {
       setLoadError('Erreur de chargement des données.');
     } finally {
@@ -369,6 +388,9 @@ export function AdminPage() {
           )}
           {activeTab === 'stats' && (
             <StatsTab users={users} consultations={consultations} formation={formation} />
+          )}
+          {activeTab === 'marabouts' && (
+            <MaraboutsAdminTab marabouts={maraboutsData} onChanged={loadAllData} />
           )}
         </>
       )}
@@ -1549,6 +1571,155 @@ function StatsTab({ users, consultations, formation }: { users: Profile[]; consu
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+// ── MARABOUTS ADMIN TAB ───────────────────────────────────
+
+function MaraboutsAdminTab({ marabouts, onChanged }: {
+  marabouts: AdminMarabout[];
+  onChanged: () => void;
+}) {
+  const [filterStatut, setFilterStatut] = useState<string>('all');
+  const [abonnementId, setAbonnementId] = useState<string | null>(null);
+  const [abonnementDate, setAbonnementDate] = useState('');
+  const [msg, setMsg] = useState('');
+
+  const filtered = filterStatut === 'all'
+    ? marabouts
+    : marabouts.filter(m => m.statut === filterStatut);
+
+  async function setStatut(id: string, statut: string) {
+    await supabase.from('marabouts').update({ statut }).eq('id', id);
+    setMsg('Statut mis à jour.');
+    onChanged();
+  }
+
+  async function toggleVerified(m: AdminMarabout) {
+    await supabase.from('marabouts').update({ is_verified: !m.is_verified }).eq('id', m.id);
+    onChanged();
+  }
+
+  async function toggleFeatured(m: AdminMarabout) {
+    await supabase.from('marabouts').update({ is_featured: !m.is_featured }).eq('id', m.id);
+    onChanged();
+  }
+
+  async function deleteMarabout(id: string) {
+    if (!window.confirm('Supprimer ce marabout ? Action irréversible.')) return;
+    await supabase.from('marabouts').delete().eq('id', id);
+    setMsg('Marabout supprimé.');
+    onChanged();
+  }
+
+  async function saveAbonnement(id: string) {
+    if (!abonnementDate) { setMsg('Date requise.'); return; }
+    await supabase.from('marabouts').update({ abonne_jusqu_au: new Date(abonnementDate).toISOString() }).eq('id', id);
+    setMsg('Abonnement mis à jour.');
+    setAbonnementId(null);
+    setAbonnementDate('');
+    onChanged();
+  }
+
+  const counts = { pending: 0, active: 0, suspended: 0 };
+  marabouts.forEach(m => { (counts as Record<string, number>)[m.statut] = ((counts as Record<string, number>)[m.statut] ?? 0) + 1; });
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+        {[
+          { label: 'Total',      value: marabouts.length, color: '#f9a825' },
+          { label: 'Actifs',     value: counts.active,    color: '#4caf50' },
+          { label: 'En attente', value: counts.pending,   color: '#f9a825' },
+          { label: 'Suspendus',  value: counts.suspended, color: '#ef5350' },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ background: '#111a55', border: '1px solid rgba(249,168,37,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: '700', color, marginBottom: '4px' }}>{value}</div>
+            <div style={{ color: '#b0b8d4', fontSize: '0.78rem' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {([['all', 'Tous'], ['pending', 'En attente'], ['active', 'Actifs'], ['suspended', 'Suspendus']] as [string, string][]).map(([val, label]) => (
+            <button key={val} onClick={() => setFilterStatut(val)} style={{
+              background: filterStatut === val ? '#f9a825' : 'transparent',
+              border: '1px solid rgba(249,168,37,0.4)',
+              color: filterStatut === val ? '#1a237e' : '#f9a825',
+              padding: '7px 14px', cursor: 'pointer', borderRadius: '20px', fontSize: '0.8rem',
+              fontWeight: filterStatut === val ? '700' : '500',
+            }}>{label}</button>
+          ))}
+        </div>
+        {msg && <span style={{ color: '#4caf50', fontSize: '0.83rem' }}>{msg}</span>}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div style={{ ...card, textAlign: 'center', color: '#b0b8d4', padding: '40px' }}>Aucun marabout dans cette catégorie.</div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {['Nom', 'Localisation', 'Statut', 'Vérifié', "Abonnement jusqu'au", 'Actions'].map(h => (
+                  <th key={h} style={th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((m, i) => (
+                <tr key={m.id} style={{ background: i % 2 === 0 ? 'rgba(17,26,85,0.5)' : 'transparent' }}>
+                  <td style={td}>
+                    <div style={{ color: 'white', fontWeight: '600', fontSize: '0.85rem' }}>{m.nom}</div>
+                    {m.is_featured && (
+                      <span style={{ background: 'rgba(249,168,37,0.12)', color: '#f9a825', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Recommandé</span>
+                    )}
+                    <div style={{ color: '#b0b8d4', fontSize: '0.68rem', marginTop: '2px', opacity: 0.7 }}>{formatDate(m.created_at)}</div>
+                  </td>
+                  <td style={td}>{m.localisation ?? '—'}</td>
+                  <td style={td}>
+                    <span style={{ color: m.statut === 'active' ? '#4caf50' : m.statut === 'pending' ? '#f9a825' : '#ef5350', fontWeight: '600', fontSize: '0.82rem' }}>
+                      {m.statut === 'active' ? 'Actif' : m.statut === 'pending' ? 'En attente' : 'Suspendu'}
+                    </span>
+                  </td>
+                  <td style={td}>
+                    <button onClick={() => toggleVerified(m)} style={smallBtn(m.is_verified ? '#4caf50' : '#b0b8d4', m.is_verified)}>
+                      {m.is_verified ? 'Oui' : 'Non'}
+                    </button>
+                  </td>
+                  <td style={td}>
+                    {abonnementId === m.id ? (
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <input type="date" value={abonnementDate} onChange={e => setAbonnementDate(e.target.value)}
+                          style={{ background: '#0a0e2e', border: '1px solid rgba(249,168,37,0.3)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.78rem' }} />
+                        <button onClick={() => saveAbonnement(m.id)} style={smallBtn('#4caf50', true)}>OK</button>
+                        <button onClick={() => setAbonnementId(null)} style={smallBtn('#b0b8d4', false)}>✕</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setAbonnementId(m.id); setAbonnementDate(m.abonne_jusqu_au ? m.abonne_jusqu_au.slice(0, 10) : ''); }} style={smallBtn('#f9a825', false)}>
+                        {m.abonne_jusqu_au ? formatDateShort(m.abonne_jusqu_au) : 'Définir'}
+                      </button>
+                    )}
+                  </td>
+                  <td style={td}>
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                      {m.statut !== 'active'    && <button onClick={() => setStatut(m.id, 'active')}    style={smallBtn('#4caf50', false)}>Activer</button>}
+                      {m.statut !== 'pending'   && <button onClick={() => setStatut(m.id, 'pending')}   style={smallBtn('#f9a825', false)}>En attente</button>}
+                      {m.statut !== 'suspended' && <button onClick={() => setStatut(m.id, 'suspended')} style={smallBtn('#ef5350', false)}>Suspendre</button>}
+                      <button onClick={() => toggleFeatured(m)} style={smallBtn('#b0b8d4', m.is_featured)}>
+                        {m.is_featured ? 'Dé-recommander' : 'Recommander'}
+                      </button>
+                      <button onClick={() => deleteMarabout(m.id)} style={smallBtn('#ef5350', true)}>Supprimer</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
