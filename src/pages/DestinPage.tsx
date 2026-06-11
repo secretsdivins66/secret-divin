@@ -199,7 +199,7 @@ async function callGemini(body: unknown, label: string, maxAttempts = 3): Promis
 async function translateName(name: string): Promise<string> {
   const j = await callGemini({
     contents: [{ parts: [{ text: `Translitère ce prénom en arabe classique (sans voyelles supplémentaires, écriture standard). Réponds UNIQUEMENT avec le prénom en arabe, rien d'autre.\n\nPrénom: ${name}` }] }],
-    generationConfig: { temperature: 0.1, maxOutputTokens: 30 },
+    generationConfig: { temperature: 0.1, maxOutputTokens: 30, thinkingConfig: { thinkingBudget: 0 } },
   }, `translateName(${name})`);
   const text = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
   if (!text) console.warn(`[Destin/translateName(${name})] Réponse vide de Gemini.`);
@@ -209,7 +209,7 @@ async function translateName(name: string): Promise<string> {
 async function callDestinGemini(prompt: string): Promise<DestinData> {
   const j = await callGemini({
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.8, maxOutputTokens: 4000 },
+    generationConfig: { temperature: 0.8, maxOutputTokens: 4000, thinkingConfig: { thinkingBudget: 0 } },
   }, 'callDestinGemini');
 
   const raw = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '') as string;
