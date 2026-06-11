@@ -125,36 +125,106 @@ function TalismanGrid({ cells, size }: { cells: number[]; size: number }) {
 // ─── Gemini API ─────────────────────────────────────────────────────────────
 
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
-const GEMINI_FLASH_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-const GEMINI_25_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Appelle l'API Gemini avec retries (backoff exponentiel) sur les erreurs
+ * transitoires (503 "model overloaded", 429 quota, 500/502/504).
+ */
+async function callGemini(body: unknown, label: string, maxAttempts = 3): Promise<{ candidates?: { content?: { parts?: { text?: string }[] } }[] }> {
+  if (!GEMINI_KEY) {
+    console.error(`[Destin/${label}] VITE_GEMINI_API_KEY est manquante côté client.`);
+    throw new Error("Configuration manquante: la clé API Gemini (VITE_GEMINI_API_KEY) n'est pas définie.");
+  }
+
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    console.log(`[Destin/${label}] Tentative ${attempt}/${maxAttempts} — envoi de la requête à ${GEMINI_MODEL}...`);
+    try {
+      const res = await fetch(GEMINI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        console.error(`[Destin/${label}] Réponse HTTP ${res.status} (tentative ${attempt}/${maxAttempts}). Détails: ${errBody}`);
+
+        const retryable = res.status === 503 || res.status === 429 || res.status === 500 || res.status === 502 || res.status === 504;
+        if (retryable && attempt < maxAttempts) {
+          const delay = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s...
+          console.warn(`[Destin/${label}] Erreur transitoire (${res.status}), nouvel essai dans ${delay}ms.`);
+          await sleep(delay);
+          continue;
+        }
+
+        if (res.status === 503) {
+          throw new Error("Le service de génération est temporairement surchargé. Veuillez réessayer dans quelques instants.");
+        }
+        if (res.status === 429) {
+          throw new Error("Quota de l'API Gemini dépassé. Réessayez plus tard ou vérifiez le quota dans Google AI Studio.");
+        }
+        if (res.status === 401 || res.status === 403) {
+          throw new Error("Clé API Gemini invalide ou non autorisée (VITE_GEMINI_API_KEY).");
+        }
+        throw new Error(`Erreur de connexion (${res.status})`);
+      }
+
+      const j = await res.json();
+      console.log(`[Destin/${label}] Réponse reçue avec succès (tentative ${attempt}).`);
+      return j;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.error(`[Destin/${label}] Erreur lors de la tentative ${attempt}/${maxAttempts}:`, lastError.message);
+
+      // Erreurs HTTP déjà classifiées (503/429/401/403/etc.) -> ne pas retenter, propager directement.
+      const alreadyClassified = /^(Le service|Quota|Clé API|Erreur de connexion)/.test(lastError.message);
+      if (alreadyClassified || attempt >= maxAttempts) throw lastError;
+
+      // Erreur réseau (fetch a échoué avant d'obtenir une réponse) -> retry avec backoff.
+      const delay = 1000 * Math.pow(2, attempt - 1);
+      console.warn(`[Destin/${label}] Erreur réseau, nouvel essai dans ${delay}ms.`);
+      await sleep(delay);
+    }
+  }
+
+  throw lastError ?? new Error('Erreur inconnue lors de l\'appel à Gemini.');
+}
 
 async function translateName(name: string): Promise<string> {
-  const res = await fetch(GEMINI_FLASH_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `Translitère ce prénom en arabe classique (sans voyelles supplémentaires, écriture standard). Réponds UNIQUEMENT avec le prénom en arabe, rien d'autre.\n\nPrénom: ${name}` }] }],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 30 },
-    }),
-  });
-  const j = await res.json();
-  return (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
+  const j = await callGemini({
+    contents: [{ parts: [{ text: `Translitère ce prénom en arabe classique (sans voyelles supplémentaires, écriture standard). Réponds UNIQUEMENT avec le prénom en arabe, rien d'autre.\n\nPrénom: ${name}` }] }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 30 },
+  }, `translateName(${name})`);
+  const text = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
+  if (!text) console.warn(`[Destin/translateName(${name})] Réponse vide de Gemini.`);
+  return text;
 }
 
 async function callDestinGemini(prompt: string): Promise<DestinData> {
-  const res = await fetch(GEMINI_25_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.8, maxOutputTokens: 4000 },
-    }),
-  });
-  if (!res.ok) throw new Error(`Erreur de connexion (${res.status})`);
-  const j = await res.json();
+  const j = await callGemini({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.8, maxOutputTokens: 4000 },
+  }, 'callDestinGemini');
+
   const raw = (j.candidates?.[0]?.content?.parts?.[0]?.text ?? '') as string;
+  if (!raw) {
+    console.error('[Destin/callDestinGemini] Réponse Gemini sans contenu texte:', JSON.stringify(j));
+    throw new Error('Le modèle a renvoyé une réponse vide. Veuillez réessayer.');
+  }
+
   const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-  return JSON.parse(cleaned) as DestinData;
+  try {
+    return JSON.parse(cleaned) as DestinData;
+  } catch (parseErr) {
+    console.error('[Destin/callDestinGemini] Échec du parsing JSON de la réponse Gemini:', parseErr, '\nContenu brut:', cleaned);
+    throw new Error('Réponse du modèle invalide (JSON malformé). Veuillez réessayer.');
+  }
 }
 
 function buildPrompt(
@@ -242,6 +312,7 @@ export function DestinPage() {
     const cacheKey = `destin_${firstName.trim()}_${motherName.trim()}_${gender}_${religion}`;
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
+      console.log('[Destin] Résultat trouvé dans le cache de session, pas d\'appel API.');
       const parsed = JSON.parse(cached) as { data: DestinData; firstNameAr: string; motherNameAr: string; pm: number };
       setData(parsed.data);
       setFirstNameAr(parsed.firstNameAr);
@@ -250,12 +321,19 @@ export function DestinPage() {
       return;
     }
 
-    // Check auth + credits
-    const { data: { session } } = await supabase.auth.getSession();
+    // 1. Vérification de la session Supabase
+    console.log('[Destin] Étape 1/5 — Vérification de la session Supabase...');
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) console.error('[Destin] Erreur récupération session Supabase:', sessionError.message);
     if (!session) { setError('Vous devez être connecté.'); return; }
+    console.log(`[Destin] Session OK pour l'utilisateur ${session.user.id}.`);
 
-    const { data: profile } = await supabase.from('profiles').select('credits').eq('id', session.user.id).single();
+    // 2. Vérification des crédits
+    console.log('[Destin] Étape 2/5 — Lecture du solde de crédits...');
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('credits').eq('id', session.user.id).single();
+    if (profileError) console.error('[Destin] Erreur lecture profil Supabase:', profileError.message);
     const credits = (profile as { credits: number } | null)?.credits ?? 0;
+    console.log(`[Destin] Solde actuel: ${credits} crédits (coût: ${COST}).`);
     if (credits < COST) {
       setBalance(credits);
       setShowCreditModal(true);
@@ -264,11 +342,13 @@ export function DestinPage() {
 
     setLoading(true);
     try {
-      // Translitération parallèle
+      // 3. Translitération parallèle
+      console.log('[Destin] Étape 3/5 — Translitération des prénoms via Gemini...');
       const [fnAr, mnAr] = await Promise.all([
         translateName(firstName.trim()),
         translateName(motherName.trim()),
       ]);
+      console.log(`[Destin] Translitération obtenue: "${firstName}" -> "${fnAr}", "${motherName}" -> "${mnAr}"`);
       setFirstNameAr(fnAr);
       setMotherNameAr(mnAr);
 
@@ -276,37 +356,43 @@ export function DestinPage() {
       const pmVal = calculatePM(calculateWeight(fnAr), calculateWeight(mnAr), gender);
       setPm(pmVal);
       const el = getElement(pmVal);
+      console.log(`[Destin] Poids Mystique calculé: ${pmVal} (élément: ${el.name}).`);
 
-      // Appel Gemini 2.5-flash
+      // 4. Génération de l'analyse de destin via Gemini
+      console.log('[Destin] Étape 4/5 — Génération de l\'analyse de destin via Gemini...');
       const prompt = buildPrompt(firstName.trim(), fnAr, motherName.trim(), mnAr, gender, religion, pmVal, el.name);
-      let result: DestinData;
-      try {
-        result = await callDestinGemini(prompt);
-      } catch {
-        // Retry once
-        result = await callDestinGemini(prompt);
-      }
+      const result = await callDestinGemini(prompt);
+      console.log('[Destin] Analyse de destin générée avec succès.');
 
-      // Déduction crédits
-      await supabase.from('profiles').update({ credits: credits - COST }).eq('id', session.user.id);
-      await supabase.from('credit_transactions').insert({
+      // 5. Déduction crédits + sauvegarde + retour au frontend
+      console.log('[Destin] Étape 5/5 — Déduction des crédits et sauvegarde...');
+      const { error: creditError } = await supabase.from('profiles').update({ credits: credits - COST }).eq('id', session.user.id);
+      if (creditError) console.error('[Destin] Erreur déduction crédits:', creditError.message);
+
+      const { error: txError } = await supabase.from('credit_transactions').insert({
         user_id: session.user.id, tool: 'destin', amount: -COST,
         description: `Analyse destin: ${firstName}`,
       });
+      if (txError) console.error('[Destin] Erreur enregistrement transaction:', txError.message);
 
       // Sauvegarde rituel (non-bloquant)
       supabase.from('saved_rituals').insert({
         user_id: session.user.id, tool: 'destin',
         title: `Destin de ${firstName}`,
         content: result,
-      }).then(() => {});
+      }).then(({ error: ritualError }) => {
+        if (ritualError) console.error('[Destin] Erreur sauvegarde rituel:', ritualError.message);
+      });
 
       // Cache
       sessionStorage.setItem(cacheKey, JSON.stringify({ data: result, firstNameAr: fnAr, motherNameAr: mnAr, pm: pmVal }));
 
+      console.log('[Destin] Résultat prêt, affichage au frontend.');
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inattendue. Réessayez.');
+      const message = err instanceof Error ? err.message : 'Erreur inattendue. Réessayez.';
+      console.error('[Destin] Échec de la génération:', message, err);
+      setError(message);
     } finally {
       setLoading(false);
     }
